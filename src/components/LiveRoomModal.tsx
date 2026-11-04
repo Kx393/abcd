@@ -314,6 +314,11 @@ export const LiveRoomModal: React.FC<LiveRoomModalProps> = ({
                     <p className="text-[11px] text-slate-400">
                       Joining an existing room on other screens does not require a sign-in.
                     </p>
+                    {typeof window !== 'undefined' && window.location.hostname.endsWith('github.io') && (
+                      <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-700/60 text-[11px] text-slate-300 text-left">
+                        <span className="font-bold text-amber-300">GitHub Pages Host Tip:</span> To sign in as room host from GitHub Pages, verify that your domain (<code className="text-amber-200">{window.location.hostname}</code>) is added to your Firebase Console under Auth &rarr; Settings &rarr; Authorized Domains.
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3">

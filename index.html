@@ -25,22 +25,23 @@
   <body class="bg-slate-950 text-slate-100">
     <div id="root"></div>
 
-    <script type="module" src="/src/main.tsx"></script>
-
-    <script type="module">
-      // Universal static fallback for GitHub Pages:
-      // If running on a static host without a Vite dev server, /src/main.tsx won't execute.
-      // In that case, immediately load the pre-compiled production bundle from ./assets/index.js!
-      setTimeout(function() {
-        var root = document.getElementById('root');
-        if (!root || !root.hasChildNodes() || root.children.length === 0) {
-          var s = document.createElement('script');
-          s.type = 'module';
-          s.crossOrigin = 'anonymous';
-          s.src = './assets/index.js';
-          document.body.appendChild(s);
+    <script>
+      // When deployed directly from raw repository root on GitHub Pages:
+      // Browser cannot execute raw TypeScript /src/main.tsx.
+      // Automatically redirect to /docs/ where the compiled production build resides.
+      window.addEventListener('error', function(e) {
+        if (typeof window !== 'undefined' && window.location.hostname.endsWith('github.io')) {
+          var isMainTsx = (e.message && (e.message.includes('main.tsx') || e.message.includes('MIME type') || e.message.includes('SyntaxError'))) ||
+                          (e.target && e.target.src && e.target.src.indexOf('main.tsx') !== -1);
+          if (isMainTsx) {
+            var path = window.location.pathname.replace(/\/+$/, '');
+            if (!path.includes('/docs')) {
+              window.location.replace(path + '/docs/' + window.location.search + window.location.hash);
+            }
+          }
         }
-      }, 60);
+      }, true);
     </script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

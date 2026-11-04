@@ -11,12 +11,28 @@
     <meta name="twitter:card" content="summary_large_image" />
 
     <style>html,body{color:#f8fafc;background-color:#020617;min-height:100vh;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif}</style>
-    <script type="module" crossorigin src="./assets/index-iL3O8Zs-.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-XArmHrBd.css">
+    <script type="module" crossorigin src="./assets/index-Imbsh5DF.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-B2l95H9O.css">
   </head>
   <body class="bg-slate-950 text-slate-100">
     <div id="root"></div>
 
-
+    <script>
+      // When deployed directly from raw repository root on GitHub Pages:
+      // Browser cannot execute raw TypeScript /src/main.tsx.
+      // Automatically redirect to /docs/ where the compiled production build resides.
+      window.addEventListener('error', function(e) {
+        if (typeof window !== 'undefined' && window.location.hostname.endsWith('github.io')) {
+          var isMainTsx = (e.message && (e.message.includes('main.tsx') || e.message.includes('MIME type') || e.message.includes('SyntaxError'))) ||
+                          (e.target && e.target.src && e.target.src.indexOf('main.tsx') !== -1);
+          if (isMainTsx) {
+            var path = window.location.pathname.replace(/\/+$/, '');
+            if (!path.includes('/docs')) {
+              window.location.replace(path + '/docs/' + window.location.search + window.location.hash);
+            }
+          }
+        }
+      }, true);
+    </script>
   </body>
 </html>
