@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny all unmapped paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 64 && id.size() > 0 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidGameRoom(data) {
+      return data.keys().hasAll(['roomId', 'hostId', 'gameState', 'tiles', 'teams', 'activeTeamIndex', 'updatedAt'])
+        && data.keys().hasOnly(['roomId', 'hostId', 'hostEmail', 'gameState', 'currentPack', 'tiles', 'teams', 'activeTeamIndex', 'lastAction', 'updatedAt', 'createdAt'])
+        && data.roomId is string && data.roomId.size() <= 64 && data.roomId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.hostId is string && data.hostId.size() <= 128
+        && (!('hostEmail' in data) || (data.hostEmail is string && data.hostEmail.size() <= 128))
+        && data.gameState in ['title', 'playing', 'gameover']
+        && data.activeTeamIndex is number && data.activeTeamIndex >= 0 && data.activeTeamIndex <= 100
+        && data.tiles is list && data.tiles.size() <= 32
+        && data.teams is list && data.teams.size() <= 32
+        && data.updatedAt is string && data.updatedAt.size() <= 64
+        && (!('lastAction' in data) || (data.lastAction is string && data.lastAction.size() <= 300))
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64));
+    }
+
+    // Room Match Block
+    match /rooms/{roomId} {
+      // Anyone with the room link can view the live room (stage display, audience, co-hosts)
+      allow get: if isValidId(roomId);
+
+      // Deny blanket collection listing to prevent unauthorized room enumeration
+      allow list: if false;
+
+      // Authenticated verified host can create the room
+      allow create: if isSignedIn()
+        && isVerifiedUser()
+        && isValidId(roomId)
+        && incoming().roomId == roomId
+        && incoming().hostId == request.auth.uid
+        && isValidGameRoom(incoming());
+
+      // Authenticated verified users can update room state, preserving room and host identity
+      allow update: if isSignedIn()
+        && isVerifiedUser()
+        && isValidId(roomId)
+        && isValidGameRoom(incoming())
+        && incoming().roomId == existing().roomId
+        && incoming().hostId == existing().hostId;
+
+      // Only the host can delete the room
+      allow delete: if isSignedIn()
+        && isVerifiedUser()
+        && isValidId(roomId)
+        && existing().hostId == request.auth.uid;
+    }
+  }
+}

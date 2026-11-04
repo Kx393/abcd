@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "GameRoom": {
+      "title": "GameRoom",
+      "description": "Live multi-device stage mystery matrix room state",
+      "type": "object",
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique room code identifier"
+        },
+        "hostId": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Firebase Auth UID of the room creator"
+        },
+        "hostEmail": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Email of the host"
+        },
+        "gameState": {
+          "type": "string",
+          "enum": ["title", "playing", "gameover"],
+          "description": "Current overall game stage"
+        },
+        "currentPack": {
+          "type": "object",
+          "description": "Active game pack information"
+        },
+        "tiles": {
+          "type": "array",
+          "description": "16 matrix tiles with status, questions, and twists"
+        },
+        "teams": {
+          "type": "array",
+          "description": "Stage teams and their live scores"
+        },
+        "activeTeamIndex": {
+          "type": "number",
+          "description": "Zero-based index of current active team"
+        },
+        "lastAction": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Recent game announcement or toast"
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "ISO timestamp of last update"
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "ISO timestamp when room was created"
+        }
+      },
+      "required": [
+        "roomId",
+        "hostId",
+        "gameState",
+        "tiles",
+        "teams",
+        "activeTeamIndex",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/rooms/{roomId}": {
+      "schema": {
+        "$ref": "#/entities/GameRoom"
+      },
+      "description": "Live stage room documents indexed by room code"
+    }
+  }
+}
